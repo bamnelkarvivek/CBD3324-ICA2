@@ -1,0 +1,104 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: db-secret
+    namespace: postgressdb
+type: Opaque
+data:
+    pg_username: ENC[AES256_GCM,data:3Lux+bMnZJA=,iv:BflGo1zOoRo1QmY/1ie5rhFOBD0anN+hHAuK/b2psC0=,tag:wAjo8W76BkYlfg5K0fXSRw==,type:str]
+    pg_password: ENC[AES256_GCM,data:S3x2Rq+aKS5kID/CVYa6lUmIkcU=,iv:aCKjx9IjF2WAnvxc56tfda0yrWapV4mq3thBdfWo6xo=,tag:KGkIq6doeIQzhTb5SJ9Tug==,type:str]
+    db_name: ENC[AES256_GCM,data:ySBnm1ArlR8=,iv:XF1sc4a9j1LpyzN/aFu9DQtvGXTbHkaIWoABAb9YJqE=,tag:wFiqoIZF6CxiCkSHlKtDkA==,type:str]
+sops:
+    kms: []
+    gcp_kms:
+        - resource_id: projects/sturdy-filament-400423/locations/northamerica-northeast1/keyRings/my-keyring/cryptoKeys/mykey
+          created_at: "2024-11-19T17:32:37Z"
+          enc: CiQAIB53mn/t0LOSQEPRy6HF+RTvQkoJ22j1h4/UVGzfOzt+fA0SSACasOrMl+R73K1HywgFpi92zhxGcaGXqi7rUpTHbjOdzOEI7yLhspi9AKgJL4IS/CytxpWk/HU/icFBgYFRinrfhi0B+g+6Cg==
+    azure_kv: []
+    hc_vault: []
+    age: []
+    lastmodified: "2024-11-19T17:32:40Z"
+    mac: ENC[AES256_GCM,data:QiNv6IWZ0OaMU74MOnj5O+NBrXYf2Kt2AE2qGSqYzgRLL9xr58IQuPcr+q1Qo/WjD5afwFQpfmjmjBjxjnXHhqeZczfsjoPkfl5HLOlMWwxkbObhiBpif/ZRMpBkzHDuVss9H1qoMUL9Cw3LhUYllPLq99iCYjpLfsI8/AIv7X8=,iv:G2AH1ysNdjhCKaQMOi12sw4axbjgkpwbVRwMicDDcBU=,tag:3QVdy0jqzskHkKTyH6kD8g==,type:str]
+    pgp: []
+    encrypted_regex: ^(data)$
+    version: 3.9.1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: postgres
+    namespace: postgressdb
+    labels:
+        app: postgres
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: postgres
+    template:
+        metadata:
+            labels:
+                app: postgres
+        spec:
+            containers:
+                - name: postgres
+                  image: postgres:13
+                  ports:
+                    - containerPort: 5432
+                  env:
+                    - name: POSTGRES_USER
+                      valueFrom:
+                        secretKeyRef:
+                            name: db-secret
+                            key: pg_username
+                    - name: POSTGRES_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                            name: db-secret
+                            key: pg_password
+                    - name: POSTGRES_DB
+                      valueFrom:
+                        secretKeyRef:
+                            name: db-secret
+                            key: db_name
+sops:
+    kms: []
+    gcp_kms:
+        - resource_id: projects/sturdy-filament-400423/locations/northamerica-northeast1/keyRings/my-keyring/cryptoKeys/mykey
+          created_at: "2024-11-19T17:32:37Z"
+          enc: CiQAIB53mn/t0LOSQEPRy6HF+RTvQkoJ22j1h4/UVGzfOzt+fA0SSACasOrMl+R73K1HywgFpi92zhxGcaGXqi7rUpTHbjOdzOEI7yLhspi9AKgJL4IS/CytxpWk/HU/icFBgYFRinrfhi0B+g+6Cg==
+    azure_kv: []
+    hc_vault: []
+    age: []
+    lastmodified: "2024-11-19T17:32:40Z"
+    mac: ENC[AES256_GCM,data:QiNv6IWZ0OaMU74MOnj5O+NBrXYf2Kt2AE2qGSqYzgRLL9xr58IQuPcr+q1Qo/WjD5afwFQpfmjmjBjxjnXHhqeZczfsjoPkfl5HLOlMWwxkbObhiBpif/ZRMpBkzHDuVss9H1qoMUL9Cw3LhUYllPLq99iCYjpLfsI8/AIv7X8=,iv:G2AH1ysNdjhCKaQMOi12sw4axbjgkpwbVRwMicDDcBU=,tag:3QVdy0jqzskHkKTyH6kD8g==,type:str]
+    pgp: []
+    encrypted_regex: ^(data)$
+    version: 3.9.1
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: postgres
+    namespace: postgressdb
+spec:
+    selector:
+        app: postgres
+    ports:
+        - protocol: TCP
+          port: 5432
+          targetPort: 5432
+sops:
+    kms: []
+    gcp_kms:
+        - resource_id: projects/sturdy-filament-400423/locations/northamerica-northeast1/keyRings/my-keyring/cryptoKeys/mykey
+          created_at: "2024-11-19T17:32:37Z"
+          enc: CiQAIB53mn/t0LOSQEPRy6HF+RTvQkoJ22j1h4/UVGzfOzt+fA0SSACasOrMl+R73K1HywgFpi92zhxGcaGXqi7rUpTHbjOdzOEI7yLhspi9AKgJL4IS/CytxpWk/HU/icFBgYFRinrfhi0B+g+6Cg==
+    azure_kv: []
+    hc_vault: []
+    age: []
+    lastmodified: "2024-11-19T17:32:40Z"
+    mac: ENC[AES256_GCM,data:QiNv6IWZ0OaMU74MOnj5O+NBrXYf2Kt2AE2qGSqYzgRLL9xr58IQuPcr+q1Qo/WjD5afwFQpfmjmjBjxjnXHhqeZczfsjoPkfl5HLOlMWwxkbObhiBpif/ZRMpBkzHDuVss9H1qoMUL9Cw3LhUYllPLq99iCYjpLfsI8/AIv7X8=,iv:G2AH1ysNdjhCKaQMOi12sw4axbjgkpwbVRwMicDDcBU=,tag:3QVdy0jqzskHkKTyH6kD8g==,type:str]
+    pgp: []
+    encrypted_regex: ^(data)$
+    version: 3.9.1

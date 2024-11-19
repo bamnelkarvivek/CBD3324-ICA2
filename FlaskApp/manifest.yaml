@@ -1,0 +1,138 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: frontend-db-secret
+    namespace: flaskapp
+type: Opaque
+data:
+    pg_username: ENC[AES256_GCM,data:iJari+nCJv8=,iv:SIpianRb0kYM1eVbAyh3n2OpXhj62GvULT7IEkRfUp4=,tag:LYroBa+nS+jfM5+qRK+ChQ==,type:str]
+    pg_password: ENC[AES256_GCM,data:HkM4WzjtoNnuB7cc+Yl/bdsYnk8=,iv:+50/t4IwKhNt3qVQ/nRizID8ajAC3yvE9ODIbb/6HEQ=,tag:iBrzU7ShpNqsNJpWUn74sw==,type:str]
+    db_name: ENC[AES256_GCM,data:R+jLpdRd54M=,iv:Dk+2axUZaVHYXjdaVQC7MROp/t+njhP4oQgei+y/fKI=,tag:+MjLlP7xAf02YJYnYdw6Gg==,type:str]
+sops:
+    kms: []
+    gcp_kms:
+        - resource_id: projects/sturdy-filament-400423/locations/northamerica-northeast1/keyRings/my-keyring/cryptoKeys/mykey
+          created_at: "2024-11-19T17:31:20Z"
+          enc: CiQAIB53muMGdWThUjqHzvT/xgYAcUq+s8BzEJg0Qu64dgXG5gkSSQCasOrMLkemwS7wxyvEI6BPgMyLtZLlKnJsc3TdPjFsGv+u2t4V2jnjYkWVCd2A25XFDMOm4ERUXVFnf160BHe+kAvVyyZwqJA=
+    azure_kv: []
+    hc_vault: []
+    age: []
+    lastmodified: "2024-11-19T17:31:22Z"
+    mac: ENC[AES256_GCM,data:8DPrYDDRfHf8BWfx/9bHk3nAozOol09UPUZYjPy+d2dFwPGbDf5WCuP0n9QFKdbgX/TLZg2mpI6AQeA6Ozil++LQgqk1cwEBmbTPde5ye+1InWHKltZo+eYmGdygu05tHsUc5PiuwvGmagDiUxevOKAMDVF9XisKmQB6ArKcGbs=,iv:+jTSizHwtTHNoIXLOlLyrqejmcvUFfLFl2RdJkNZB4w=,tag:cuFJPAG77kRgkUVD/aabnA==,type:str]
+    pgp: []
+    encrypted_regex: ^(data)$
+    version: 3.9.1
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    namespace: flaskapp
+    name: frontend-config
+data:
+    db_host: ENC[AES256_GCM,data:Gf8mNBwEHQok9M9t/icO3VDxOdCEr8a0,iv:nu7qVH15DCMYq9g4QOIfO2b8kPj00ssFvPH7tYQbb5s=,tag:8GD+B9R8xy1YQFCobl303g==,type:str]
+    redis_host: ENC[AES256_GCM,data:mOu4T43a/BZzszTDuY9f,iv:AAqmtkDRniOB3CR04LUicm3P1Z1v9UMwSCcIZnxDQLw=,tag:2wWknIKWEL9ueNQefudsdA==,type:str]
+sops:
+    kms: []
+    gcp_kms:
+        - resource_id: projects/sturdy-filament-400423/locations/northamerica-northeast1/keyRings/my-keyring/cryptoKeys/mykey
+          created_at: "2024-11-19T17:31:20Z"
+          enc: CiQAIB53muMGdWThUjqHzvT/xgYAcUq+s8BzEJg0Qu64dgXG5gkSSQCasOrMLkemwS7wxyvEI6BPgMyLtZLlKnJsc3TdPjFsGv+u2t4V2jnjYkWVCd2A25XFDMOm4ERUXVFnf160BHe+kAvVyyZwqJA=
+    azure_kv: []
+    hc_vault: []
+    age: []
+    lastmodified: "2024-11-19T17:31:22Z"
+    mac: ENC[AES256_GCM,data:8DPrYDDRfHf8BWfx/9bHk3nAozOol09UPUZYjPy+d2dFwPGbDf5WCuP0n9QFKdbgX/TLZg2mpI6AQeA6Ozil++LQgqk1cwEBmbTPde5ye+1InWHKltZo+eYmGdygu05tHsUc5PiuwvGmagDiUxevOKAMDVF9XisKmQB6ArKcGbs=,iv:+jTSizHwtTHNoIXLOlLyrqejmcvUFfLFl2RdJkNZB4w=,tag:cuFJPAG77kRgkUVD/aabnA==,type:str]
+    pgp: []
+    encrypted_regex: ^(data)$
+    version: 3.9.1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: flask-app
+    namespace: flaskapp
+    labels:
+        app: flask-app
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: flask-app
+    template:
+        metadata:
+            labels:
+                app: flask-app
+        spec:
+            containers:
+                - name: flask-app
+                  image: gcr.io/sturdy-filament-400423/cbd3324-ica:v1.2
+                  ports:
+                    - containerPort: 80
+                  env:
+                    - name: PGDB_USER
+                      valueFrom:
+                        secretKeyRef:
+                            name: frontend-db-secret
+                            key: pg_username
+                    - name: PGDB_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                            name: frontend-db-secret
+                            key: pg_password
+                    - name: PGDB_NAME
+                      valueFrom:
+                        secretKeyRef:
+                            name: frontend-db-secret
+                            key: db_name
+                    - name: PGDB_HOST
+                      valueFrom:
+                        configMapKeyRef:
+                            name: frontend-config
+                            key: db_host
+                    - name: REDIS_HOST
+                      valueFrom:
+                        configMapKeyRef:
+                            name: frontend-config
+                            key: redis_host
+sops:
+    kms: []
+    gcp_kms:
+        - resource_id: projects/sturdy-filament-400423/locations/northamerica-northeast1/keyRings/my-keyring/cryptoKeys/mykey
+          created_at: "2024-11-19T17:31:20Z"
+          enc: CiQAIB53muMGdWThUjqHzvT/xgYAcUq+s8BzEJg0Qu64dgXG5gkSSQCasOrMLkemwS7wxyvEI6BPgMyLtZLlKnJsc3TdPjFsGv+u2t4V2jnjYkWVCd2A25XFDMOm4ERUXVFnf160BHe+kAvVyyZwqJA=
+    azure_kv: []
+    hc_vault: []
+    age: []
+    lastmodified: "2024-11-19T17:31:22Z"
+    mac: ENC[AES256_GCM,data:8DPrYDDRfHf8BWfx/9bHk3nAozOol09UPUZYjPy+d2dFwPGbDf5WCuP0n9QFKdbgX/TLZg2mpI6AQeA6Ozil++LQgqk1cwEBmbTPde5ye+1InWHKltZo+eYmGdygu05tHsUc5PiuwvGmagDiUxevOKAMDVF9XisKmQB6ArKcGbs=,iv:+jTSizHwtTHNoIXLOlLyrqejmcvUFfLFl2RdJkNZB4w=,tag:cuFJPAG77kRgkUVD/aabnA==,type:str]
+    pgp: []
+    encrypted_regex: ^(data)$
+    version: 3.9.1
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: flask-app
+    namespace: flaskapp
+spec:
+    selector:
+        app: flask-app
+    ports:
+        - protocol: TCP
+          port: 80
+          targetPort: 5000
+    type: LoadBalancer
+sops:
+    kms: []
+    gcp_kms:
+        - resource_id: projects/sturdy-filament-400423/locations/northamerica-northeast1/keyRings/my-keyring/cryptoKeys/mykey
+          created_at: "2024-11-19T17:31:20Z"
+          enc: CiQAIB53muMGdWThUjqHzvT/xgYAcUq+s8BzEJg0Qu64dgXG5gkSSQCasOrMLkemwS7wxyvEI6BPgMyLtZLlKnJsc3TdPjFsGv+u2t4V2jnjYkWVCd2A25XFDMOm4ERUXVFnf160BHe+kAvVyyZwqJA=
+    azure_kv: []
+    hc_vault: []
+    age: []
+    lastmodified: "2024-11-19T17:31:22Z"
+    mac: ENC[AES256_GCM,data:8DPrYDDRfHf8BWfx/9bHk3nAozOol09UPUZYjPy+d2dFwPGbDf5WCuP0n9QFKdbgX/TLZg2mpI6AQeA6Ozil++LQgqk1cwEBmbTPde5ye+1InWHKltZo+eYmGdygu05tHsUc5PiuwvGmagDiUxevOKAMDVF9XisKmQB6ArKcGbs=,iv:+jTSizHwtTHNoIXLOlLyrqejmcvUFfLFl2RdJkNZB4w=,tag:cuFJPAG77kRgkUVD/aabnA==,type:str]
+    pgp: []
+    encrypted_regex: ^(data)$
+    version: 3.9.1

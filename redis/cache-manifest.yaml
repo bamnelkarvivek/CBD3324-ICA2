@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: cache
+    namespace: redis
+    labels:
+        app: cache
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: cache
+    template:
+        metadata:
+            labels:
+                app: cache
+        spec:
+            containers:
+                - name: cache
+                  image: redis:latest
+                  ports:
+                    - containerPort: 6379
+sops:
+    kms: []
+    gcp_kms:
+        - resource_id: projects/sturdy-filament-400423/locations/northamerica-northeast1/keyRings/my-keyring/cryptoKeys/mykey
+          created_at: "2024-11-19T17:33:08Z"
+          enc: CiQAIB53mkPFzvgTKu/RZi+vKfZpkT1jri3/15oxuLnM1wUXMj4SSQCasOrMVrTVFvvqmJh28/IHWP/PbGQTmdpdsyZWGl+1qVQ2eB/TQdTrVItSPeQrgOX55Se+EaXRKVohcNMwoKZ9eDqPO1qiSVk=
+    azure_kv: []
+    hc_vault: []
+    age: []
+    lastmodified: "2024-11-19T17:33:09Z"
+    mac: ENC[AES256_GCM,data:F2LKKUsET1bUqbVdtmrtMXcA+ANhdU1gVKEsr8jTkr+7GnFC9B6YjMA3eyAfrP2CMpDF2LbKEy4P91iqDU6MHgwgpbRt2OBFpwUziaiGLrMaXR8CRuqzb+XTVP4TpW3DheT4prPrdWRgi0vlqgsYwhvEAo7BexTF5393BrW1h7Y=,iv:ImEPBjZOyMBiKJU70c7TD11F3v2ihbrAgO2q0Nulv30=,tag:3rrwIYzIBc1yDKUIo1+dGw==,type:str]
+    pgp: []
+    encrypted_regex: ^(data)$
+    version: 3.9.1
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: redis
+    namespace: redis
+spec:
+    selector:
+        app: cache
+    ports:
+        - port: 6379
+          targetPort: 6379
+sops:
+    kms: []
+    gcp_kms:
+        - resource_id: projects/sturdy-filament-400423/locations/northamerica-northeast1/keyRings/my-keyring/cryptoKeys/mykey
+          created_at: "2024-11-19T17:33:08Z"
+          enc: CiQAIB53mkPFzvgTKu/RZi+vKfZpkT1jri3/15oxuLnM1wUXMj4SSQCasOrMVrTVFvvqmJh28/IHWP/PbGQTmdpdsyZWGl+1qVQ2eB/TQdTrVItSPeQrgOX55Se+EaXRKVohcNMwoKZ9eDqPO1qiSVk=
+    azure_kv: []
+    hc_vault: []
+    age: []
+    lastmodified: "2024-11-19T17:33:09Z"
+    mac: ENC[AES256_GCM,data:F2LKKUsET1bUqbVdtmrtMXcA+ANhdU1gVKEsr8jTkr+7GnFC9B6YjMA3eyAfrP2CMpDF2LbKEy4P91iqDU6MHgwgpbRt2OBFpwUziaiGLrMaXR8CRuqzb+XTVP4TpW3DheT4prPrdWRgi0vlqgsYwhvEAo7BexTF5393BrW1h7Y=,iv:ImEPBjZOyMBiKJU70c7TD11F3v2ihbrAgO2q0Nulv30=,tag:3rrwIYzIBc1yDKUIo1+dGw==,type:str]
+    pgp: []
+    encrypted_regex: ^(data)$
+    version: 3.9.1
